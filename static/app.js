@@ -1,8 +1,12 @@
 // Get the map from google api the first thing, in an async request
-$.getScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyAhP2DMRVyLDfq_Ewe9U8q9PD0_mMpKj60&v=3&callback=initMap",
-function() {
-   console.log("Script loaded");
+let googleURL = "https://maps.googleapis.com/maps/api/js?key=AIzaSyAhP2DMRVyLDfq_Ewe9U8q9PD0_mMpKj60&v=3&callback=initMap";
+$.getScript(googleURL)
+.done(function(){
+  console.log("Script loaded successfully");
+}).fail(function(e){
+  alert('Error, Data not loaded.\nDetails: Status Code: ' +e.status + ', Message: ' +  e.statusText);
 });
+
 
 // Public variables to be used across the code
 let map;
@@ -47,7 +51,7 @@ let Place = function(data){
   this.name = ko.observable(data.name);
   this.location = ko.observable(data.location);
   this.isVisible = ko.observable(data.isVisible);
-}
+};
 
 // Knockout ViewModel, containing the logic of viewing the places in list view,
 // and filtering them
@@ -73,7 +77,7 @@ let ViewModel = function(){
     currentMarker = markers[placeIndex];
     currentMarker.setAnimation(google.maps.Animation.BOUNCE);
     getYelpData();
-  }
+  };
 
   // the filter query entered by the user, binded to the filter text box in the view
   this.filterQuery = ko.observable('');
@@ -97,14 +101,14 @@ let ViewModel = function(){
         markers[placeIndex].setMap(null);
       }
     });
-  }
+  };
 
   // filterLocations is called whenever the value inside filterQuery changes
   this.filterQuery.subscribe(function(){
     self.filterLocations();
   });
 
-}
+};
 
 ko.applyBindings(new ViewModel());
 
@@ -151,12 +155,13 @@ function initMap() {
 // Get data from yelp, by sending an async request to the server with current place parameters
 function getYelpData(){
   let url = '/search/' + currentMarker.title + '/' + currentMarker.position.lat() + '/' + currentMarker.position.lng();
-  $.getJSON(url, function (response){
-    // if the request is handled successfully, animate the current marker and
+  $.getJSON(url)
+    .done(function (response){
+      // if the request is handled successfully, animate the current marker and
     // fill the currentInfoWindow with additional place information
     currentMarker.setAnimation(google.maps.Animation.BOUNCE);
     populateInfoWindow(currentMarker, response, currentInfoWindow);
-  }).error(function(e){
+  }).fail(function(e){
     // in case of an error, alert the user
     alert('Error, Data not loaded.\nDetails: Status Code: ' +e.status + ', Message: ' +  e.statusText);
   });
